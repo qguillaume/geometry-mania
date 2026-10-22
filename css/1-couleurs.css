@@ -1,0 +1,103 @@
+/* =======================================================================
+   1-COULEURS.CSS  —  Toutes les couleurs de l'application sont ici.
+
+   Tu veux changer une couleur ? C'est le SEUL fichier à modifier.
+   Chaque couleur a un nom (on appelle ça une "variable").
+   Ailleurs dans le site, on écrit par exemple  color: var(--orange);
+   et le navigateur va chercher la valeur écrite ici.
+
+   C'est exactement la même palette que Fraction Mania : les deux
+   applications sont sœurs, elles doivent se ressembler.
+
+   L'APPLI EST TOUJOURS EN MODE SOMBRE.
+   Elle ne suit pas le réglage du téléphone : elle reste sombre en
+   permanence, de jour comme de nuit. (Voir tout en bas si tu veux
+   revenir au thème qui s'adapte automatiquement.)
+
+   POURQUOI CES COULEURS-LÀ ?
+   Elles viennent de la palette "Okabe-Ito", inventée exprès pour rester
+   distinguables quand on est daltonien. Mais une règle est encore plus
+   importante que le choix des couleurs :
+
+        >> LA COULEUR N'EST JAMAIS LA SEULE INFORMATION <<
+
+   En géométrie c'est encore plus vrai qu'ailleurs : un côté mis en
+   avant est AUSSI plus épais, un angle droit a AUSSI son petit carré,
+   deux longueurs égales portent AUSSI le même nombre de petits traits.
+   Même en noir et blanc, la figure reste lisible. Si tu ajoutes
+   quelque chose, garde cette règle.
+   ======================================================================= */
+
+/* :root veut dire "toute la page". On y range nos noms de couleurs. */
+:root {
+  /* color-scheme prévient le navigateur que la page est sombre. Grâce à
+     cette ligne, il dessine lui aussi en sombre les barres de défilement
+     et les menus, et il n'y a pas d'éclair blanc au démarrage. */
+  color-scheme: dark;
+
+  /* --- Le décor --- */
+  --fond: #12161a;        /* le fond de la page (presque noir) */
+  --carte: #1b2127;       /* le fond des cartes et des boutons */
+  --encre: #f2f5f7;       /* la couleur du texte principal (presque blanc) */
+  --encre-douce: #a9b4bf; /* le texte des explications (gris clair) */
+  --trait: #38424c;       /* les bordures et les traits */
+
+  /* =====================================================================
+     L'ORANGE : LA COULEUR DE TOUTE L'APPLICATION
+
+     POURQUOI DE L'ORANGE, ET PAS DU VERT NI DU BLEU ?
+     Le vert est le réflexe habituel pour dire "c'est bon". Mais c'est
+     justement la teinte la plus risquée pour la forme la plus courante
+     de daltonisme, le rouge-vert : sur un fond sombre, un vert-turquoise
+     se confond avec du gris, et le sens est perdu. L'orange, lui, reste
+     franchement visible.
+     ===================================================================== */
+
+  --orange: #ff9d4d;      /* l'orange principal : tout ce qui compte */
+  --orange-doux: #c9803f; /* un orange assourdi, pour ce qui reste en
+                             retrait : les traits de construction, les
+                             pointillés, les cotes d'une figure. */
+  --fond-orange: #43260f; /* le fond pâle derrière un élément orange,
+                             et l'intérieur colorié d'une surface quand
+                             on parle de son aire. */
+
+  /* --- LE BLEU : réservé aux points de progression ---
+     C'est la seule couleur qui n'est pas orange dans l'application.
+     Justement : les points ne disent pas "c'est important", ils disent
+     "tu en es là". Une couleur à part pour un rôle à part. Et le bleu
+     ne pose aucun problème de daltonisme rouge-vert. */
+  --bleu: #56b4e9;
+  --fond-bleu: #123449; /* le halo autour du point en cours */
+
+  /* --- Un nom de rôle, pour dire ce que ça VEUT DIRE ---
+     La bordure de la carte terminée et la réponse écrite en gros s'en
+     servent toutes les deux. Change cette ligne et les deux suivent. */
+  --reussite: var(--orange);
+}
+
+
+/* =======================================================================
+   POUR REVENIR AU THÈME QUI S'ADAPTE TOUT SEUL
+
+   Si un jour tu préfères que l'appli soit claire le jour et sombre la
+   nuit, en suivant le réglage du téléphone, il faut :
+
+     1. remettre les couleurs claires dans :root ci-dessus, par exemple
+        --fond: #f7f7f5;  --carte: #ffffff;  --encre: #101418;
+        --encre-douce: #55606b;  --trait: #c9d1d9;
+        --orange: #d55e00;  --orange-doux: #a34800;
+        --fond-orange: #fbe4d5;
+        --bleu: #0072b2;  --fond-bleu: #dceaf5;
+
+     2. remplacer  color-scheme: dark;  par  color-scheme: light dark;
+
+     3. remettre en dessous le bloc qui redonne les couleurs sombres
+        quand l'appareil est réglé en sombre :
+
+          @media (prefers-color-scheme: dark) {
+            :root { ...les couleurs sombres... }
+          }
+
+     4. et dans index.html, remettre les deux lignes theme-color
+        (une pour le mode clair, une pour le mode sombre).
+   ======================================================================= */

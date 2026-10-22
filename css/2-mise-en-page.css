@@ -1,0 +1,647 @@
+/* =======================================================================
+   2-MISE-EN-PAGE.CSS  —  La forme, la taille et la position des éléments.
+
+   Ce fichier ne contient AUCUNE couleur écrite en clair : il utilise
+   seulement les noms rangés dans 1-couleurs.css, avec var(--nom).
+
+   Le fichier est découpé en 6 parties :
+     A. Réglages généraux de la page
+     B. Le titre et les boutons du haut
+     C. LA GRANDE CARTE que l'on clique
+     D. LA FIGURE : le dessin de géométrie (du SVG)
+     E. La ligne de calcul (les formules, et les fractions des formules)
+     F. Le bas de la carte et l'aide
+   ======================================================================= */
+
+
+/* ============================ A. LA PAGE ============================== */
+
+/* "*" veut dire "tous les éléments".
+   box-sizing évite que les bordures fassent déborder les boîtes. */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 16px;
+  min-height: 100vh; /* 100vh = toute la hauteur de l'écran */
+  background: var(--fond);
+  color: var(--encre);
+  font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+
+  /* flex = on empile les éléments les uns sous les autres, bien centrés. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px; /* espace automatique entre les éléments */
+}
+
+
+/* ==================== B. TITRE ET BOUTONS DU HAUT ===================== */
+
+header {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-wrap: wrap; /* si l'écran est étroit, ça passe à la ligne */
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+h1 {
+  margin: 0;
+  /* clamp(mini, idéal, maxi) : la taille s'adapte à la largeur de l'écran. */
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  letter-spacing: -0.5px;
+}
+
+h1 span {
+  color: var(--orange);
+}
+
+.sous-titre {
+  margin: 0;
+  color: var(--encre-douce);
+  font-size: 1rem;
+}
+
+.reglages {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Une petite boîte qui regroupe des boutons qui vont ensemble. */
+.groupe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px;
+  background: var(--carte);
+  border: 2px solid var(--trait);
+  border-radius: 12px;
+}
+
+.groupe > .etiquette {
+  align-self: center;
+  padding: 0 6px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--encre-douce);
+}
+
+button {
+  font: inherit; /* le bouton garde la police de la page */
+  font-weight: 600;
+  color: var(--encre);
+  background: var(--carte);
+  border: 2px solid var(--trait);
+  border-radius: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--orange);
+}
+
+/* Le contour épais quand on navigue au clavier avec la touche Tab. */
+button:focus-visible {
+  outline: 3px solid var(--orange);
+  outline-offset: 2px;
+}
+
+/* Le bouton actuellement choisi.
+   ATTENTION : il change de fond ET reçoit une barre épaisse en bas.
+   Deux signaux, donc reconnaissable même sans voir la couleur. */
+button[aria-pressed="true"] {
+  background: var(--fond-orange);
+  border-color: var(--orange);
+  box-shadow: inset 0 -4px 0 var(--orange);
+}
+
+/* Le texte est volontairement très foncé : sur un aplat orange vif, du
+   blanc manquerait de contraste. */
+.principal {
+  background: var(--orange);
+  color: #21140a;
+  border-color: var(--orange);
+}
+
+/* Le bouton "Installer l'appli". Il est orange comme le reste, mais
+   entouré de POINTILLÉS : c'est sa forme, et non sa couleur, qui le
+   distingue du bouton plein "Nouvelle figure". Il reste caché tant
+   que le téléphone ne propose pas l'installation (attribut hidden). */
+.installer {
+  border-style: dashed;
+  border-color: var(--orange);
+  background: var(--fond-orange);
+}
+
+.installer:hover {
+  border-color: var(--orange);
+}
+
+/* SUR TÉLÉPHONE : on resserre les réglages.
+
+   Il y a onze types d'exercices, soit bien plus de boutons que dans
+   Fraction Mania. À la taille d'un ordinateur ils tiennent sur deux
+   lignes ; sur un écran de téléphone, ils en prenaient six, et la
+   carte se retrouvait repoussée sous le bas de l'écran — il fallait
+   faire défiler la page avant de voir la figure.
+
+   On réduit donc les marges et la taille du texte des boutons. Ils
+   restent largement assez grands pour un doigt (la hauteur ne descend
+   pas sous 32 px), et la carte revient dans l'écran. */
+@media (max-width: 640px) {
+  body {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .reglages {
+    gap: 6px;
+  }
+
+  .groupe {
+    padding: 4px;
+    gap: 4px;
+  }
+
+  .groupe > .etiquette {
+    padding: 0 3px;
+    font-size: 0.72rem;
+  }
+
+  button {
+    padding: 6px 10px;
+    font-size: 0.92rem;
+  }
+
+  .sous-titre {
+    font-size: 0.92rem;
+  }
+}
+
+
+/* ======================= C. LA GRANDE CARTE ========================== */
+
+/* C'est le gros rectangle que l'on clique pour faire avancer le
+   raisonnement. */
+.scene {
+  width: 100%;
+  max-width: 900px;
+  min-height: min(58vh, 460px);
+  background: var(--carte);
+  border: 4px solid var(--trait);
+  border-radius: 24px;
+  padding: 20px 20px 16px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+
+  cursor: pointer;
+  user-select: none; /* évite de sélectionner le texte en cliquant vite */
+  text-align: center;
+}
+
+.scene:hover {
+  border-color: var(--orange-doux);
+}
+
+.scene:focus-visible {
+  outline: 4px solid var(--orange);
+  outline-offset: 3px;
+}
+
+/* Quand le raisonnement est terminé, la bordure devient double ET plus
+   épaisse : on voit que c'est fini même sans distinguer la couleur. */
+.scene.termine {
+  border-color: var(--reussite);
+  border-style: double;
+  border-width: 8px;
+}
+
+
+/* =========================== D. LA FIGURE ============================ */
+
+/* Le dessin de géométrie. C'est le cœur de l'application : c'est lui
+   qui change à chaque clic, pendant que l'explication se déroule.
+
+   Il est fait en SVG, un format d'image composé de traits et de textes
+   décrits par leurs coordonnées. Son gros avantage : il reste net
+   quelle que soit la taille de l'écran, et ses couleurs sont celles du
+   CSS — donc celles de 1-couleurs.css. */
+
+.figure {
+  width: 100%;
+  max-width: 460px;
+}
+
+.figure[hidden] {
+  display: none;
+}
+
+/* Le dessin s'étire sur toute la largeur disponible ; sa hauteur suit
+   automatiquement, sans jamais se déformer. max-height l'empêche de
+   manger tout l'écran d'un téléphone tenu à la verticale. */
+.figure-dessin {
+  width: 100%;
+  height: auto;
+  max-height: min(44vh, 320px);
+}
+
+/* --- LES TRAITS DE LA FIGURE ---
+   Trois épaisseurs, pour trois rôles. C'est l'ÉPAISSEUR qui les
+   distingue d'abord, la couleur ne fait que confirmer.
+
+   fill: none est indispensable pour les formes fermées : sans ça, le
+   navigateur remplirait l'intérieur d'un triangle au lieu de n'en
+   tracer que les côtés. */
+.fig-ligne,
+.fig-forte,
+.fig-pointille,
+.fig-construction {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Le trait normal d'une figure : un côté, une droite, un cercle. */
+.fig-ligne {
+  stroke: var(--encre);
+  stroke-width: 2.4;
+}
+
+/* L'ÉLÉMENT DONT ON PARLE à cette étape. Deux signaux à la fois :
+   la couleur orange ET une épaisseur presque double. */
+.fig-forte {
+  stroke: var(--orange);
+  stroke-width: 5;
+}
+
+/* Un trait de construction : il n'existe pas vraiment dans la figure,
+   il sert juste à expliquer (l'axe de symétrie, le report d'une
+   longueur, la hauteur d'un triangle). Il est en POINTILLÉS : sa forme
+   dit à elle seule « je suis un trait d'aide ». */
+.fig-pointille {
+  stroke: var(--orange);
+  stroke-width: 2.6;
+  stroke-dasharray: 8 6;
+}
+
+.fig-construction {
+  stroke: var(--orange-doux);
+  stroke-width: 1.8;
+  stroke-dasharray: 4 5;
+}
+
+/* Le papier quadrillé du cahier, pour les exercices de symétrie.
+   Il doit rester DISCRET : on compte les carreaux, on ne les regarde
+   pas. Il est donc tracé dans la couleur des bordures, très fin. */
+.fig-quadrillage {
+  stroke: var(--trait);
+  stroke-width: 1;
+  fill: none;
+}
+
+/* --- LES SURFACES ---
+   Quand on parle de l'AIRE d'une figure, on colorie son intérieur.
+   Le fond est très sombre : le contour reste parfaitement lisible. */
+.fig-surface {
+  fill: var(--fond-orange);
+  stroke: none;
+}
+
+/* --- LES POINTS ---
+   Un point est un petit disque. Celui dont on parle est plus GROS en
+   plus d'être orange. */
+.fig-point {
+  fill: var(--encre);
+  stroke: var(--carte);
+  stroke-width: 1.5;
+}
+
+.fig-point-fort {
+  fill: var(--orange);
+  stroke: var(--carte);
+  stroke-width: 1.5;
+}
+
+/* --- LES NOMS DES POINTS (A, B, C...) ---
+   Dans un dessin SVG, la couleur d'un texte se règle avec "fill"
+   (remplissage) et non avec "color" comme dans le reste de la page.
+   Les tailles sont exprimées dans les unités du dessin (viewBox), pas
+   en pixels d'écran : elles rétrécissent donc avec lui sur un
+   téléphone. C'est pour ça qu'elles paraissent grandes ici. */
+.fig-nom {
+  fill: var(--encre);
+  font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.fig-nom-fort {
+  fill: var(--orange);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+/* Le nom d'une droite, écrit le long d'elle : plus petit et en retrait,
+   c'est une étiquette, pas un sommet de la figure. */
+.fig-etiquette {
+  fill: var(--orange-doux);
+  font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+/* Une mesure écrite le long d'un côté : « 5 cm ». */
+.fig-mesure {
+  fill: var(--orange);
+  font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+/* --- LE CODAGE DE LA FIGURE ---
+   Les petits traits qui disent « ces deux côtés ont la même longueur »,
+   et le petit carré de l'angle droit. C'est le langage officiel de la
+   géométrie : il porte l'information tout seul, sans couleur. */
+.fig-codage {
+  stroke: var(--orange);
+  stroke-width: 3;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.fig-angle-droit {
+  stroke: var(--orange);
+  stroke-width: 3;
+  fill: none;
+}
+
+/* L'arc qui marque un angle, et sa mesure écrite à côté. */
+.fig-angle {
+  stroke: var(--orange);
+  stroke-width: 3;
+  fill: none;
+}
+
+/* La phrase qui décrit la figure, juste en dessous du dessin. */
+.figure-legende {
+  margin: 4px 0 0;
+  font-size: clamp(0.9rem, 2.2vw, 1.05rem);
+  color: var(--encre-douce);
+}
+
+.figure-legende strong {
+  color: var(--encre);
+}
+
+
+/* =================== E. LA LIGNE DE CALCUL ========================== */
+
+/* La ligne des formules, par exemple :  P = 2 × (7 + 4) = 22 cm
+   Elle n'apparaît que sur les étapes qui calculent quelque chose. */
+.expr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: clamp(1.6rem, 6vw, 2.8rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.expr:empty {
+  display: none; /* pas de formule : pas d'espace vide réservé */
+}
+
+/* Les lignes qui comptent beaucoup d'éléments passent en plus petit :
+   sinon elles déborderaient de la carte sur un téléphone. Le
+   JavaScript pose la classe "dense". */
+.expr.dense {
+  font-size: clamp(1.2rem, 4.4vw, 2rem);
+  gap: 8px;
+}
+
+/* Une fraction = 3 éléments empilés verticalement : le numérateur, le
+   trait, puis le dénominateur. On s'en sert pour l'aire du triangle,
+   qui s'écrit (base × hauteur) ÷ 2. */
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.num,
+.den {
+  padding: 0 0.18em;
+  white-space: nowrap; /* "4 × 2" ne doit jamais être coupé en deux lignes */
+}
+
+/* Le trait de fraction. currentColor = la même couleur que le texte. */
+.bar {
+  width: 100%;
+  min-width: 1.2em;
+  height: 0.09em;
+  min-height: 4px;
+  margin: 0.1em 0;
+  background: currentColor;
+  border-radius: 999px;
+}
+
+.entier {
+  padding: 0 0.1em;
+}
+
+/* Les signes  + − × ÷ = < > ? entre deux nombres. */
+.op {
+  color: var(--orange);
+  font-weight: 800;
+  padding: 0 0.1em;
+}
+
+/* Un mot de liaison, comme le "donc" ou le "cm²" d'une formule.
+   Écrit bien plus petit que les nombres et en gris : c'est un mot de
+   la phrase, pas un élément du calcul. */
+.mot {
+  font-size: 0.42em;
+  font-weight: 600;
+  color: var(--encre-douce);
+  padding: 0 0.3em;
+  white-space: nowrap;
+}
+
+/* LA MISE EN ÉVIDENCE (le fameux "× 2").
+   Quatre signaux en même temps :
+     1. la couleur orange
+     2. un fond pâle
+     3. le texte est déjà en gras
+     4. un soulignement en pointillés
+   Même sans voir la couleur, on repère tout de suite le morceau
+   important. */
+.hl {
+  color: var(--orange);
+  background: var(--fond-orange);
+  border-radius: 8px;
+  padding: 0 0.12em;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 0.06em;
+  text-underline-offset: 0.12em;
+}
+
+/* Le résultat final change de couleur, en plus de la bordure double. */
+.scene.termine .expr .frac,
+.scene.termine .expr .entier {
+  color: var(--reussite);
+}
+
+
+/* ==================== F. BAS DE LA CARTE ET AIDE ===================== */
+
+/* La phrase d'explication sous la figure. */
+.note {
+  font-size: clamp(1rem, 2.6vw, 1.3rem);
+  color: var(--encre-douce);
+  max-width: 42ch; /* 42 caractères de large : plus facile à lire */
+  min-height: 2.6em; /* hauteur réservée, pour que ça ne saute pas */
+}
+
+.note strong {
+  color: var(--encre);
+}
+
+/* Le mot de vocabulaire que l'on veut faire retenir : il reçoit les
+   mêmes quatre signaux que .hl dans les formules. */
+.note .mot-cle {
+  color: var(--orange);
+  background: var(--fond-orange);
+  border-radius: 8px;
+  padding: 0 0.2em;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 0.15em;
+}
+
+.pied {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 2px dashed var(--trait);
+  padding-top: 12px;
+  color: var(--encre-douce);
+  font-size: 0.95rem;
+}
+
+/* Les petits ronds qui montrent où on en est dans le raisonnement.
+   SEULE PARTIE BLEUE DE L'APPLICATION, volontairement : ils ne disent
+   pas "c'est important", ils disent "tu en es là". Un rôle à part
+   mérite une couleur à part. */
+.points {
+  display: flex;
+  gap: 8px;
+}
+
+.point {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--encre-douce);
+  border-radius: 50%;
+}
+
+.point.faite {
+  background: var(--bleu);
+  border-color: var(--bleu);
+}
+
+/* L'étape en cours a un halo autour : sa FORME est différente. */
+.point.active {
+  background: var(--bleu);
+  border-color: var(--bleu);
+  box-shadow: 0 0 0 4px var(--fond-bleu);
+}
+
+.indice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+/* Les deux boutons "retour en arrière", juste sous la carte.
+   flex: 1 partage la largeur en deux parts égales, et min-height leur
+   donne une hauteur confortable pour le pouce sur un téléphone. */
+.navigation {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  gap: 10px;
+}
+
+.navigation button {
+  flex: 1;
+  min-height: 52px;
+  padding: 10px 12px;
+}
+
+/* Grisé quand il n'y a plus rien derrière : le bouton est estompé ET
+   le curseur devient "interdit". Deux signaux, encore une fois. */
+.navigation button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.navigation button:disabled:hover {
+  border-color: var(--trait);
+}
+
+.aide {
+  width: 100%;
+  max-width: 900px;
+  margin: 0;
+  color: var(--encre-douce);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* SUR TÉLÉPHONE : on cache la phrase qui parle des touches du clavier.
+   La condition se lit : "écran étroit, OU appareil dont le pointeur est
+   gros et imprécis (un doigt) et qui ne sait pas survoler (pas de
+   souris)" — autrement dit un téléphone ou une tablette. */
+@media (max-width: 640px), (pointer: coarse) and (hover: none) {
+  .aide-clavier {
+    display: none;
+  }
+}
+
+/* <kbd> sert à afficher une touche du clavier, comme Espace. */
+kbd {
+  font: inherit;
+  font-size: 0.85em;
+  border: 1px solid var(--trait);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  padding: 1px 6px;
+  background: var(--carte);
+  color: var(--encre);
+}

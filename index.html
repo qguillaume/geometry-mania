@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <!-- =====================================================================
+       INDEX.HTML  —  La structure de la page : le squelette.
+
+       Trois sortes de fichiers travaillent ensemble :
+         - le HTML (ce fichier)  = ce qu'il y a sur la page
+         - le CSS  (dossier css) = à quoi ça ressemble
+         - le JS   (dossier js)  = ce qui se passe quand on clique
+
+       Pour ouvrir l'application : double-clic sur ce fichier.
+       ================================================================== -->
+
+  <head>
+    <!-- Réglages techniques, invisibles sur la page. -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Geometry Mania</title>
+    <meta
+      name="description"
+      content="Entraîneur de géométrie de 6e : chaque clic révèle une étape du raisonnement, sur la figure."
+    />
+
+    <!-- ===== La partie "application installable" (PWA) =====
+         Le manifeste est la carte d'identité de l'appli : son nom, ses
+         icônes, ses couleurs. C'est grâce à lui que le téléphone
+         propose de l'ajouter à l'écran d'accueil.
+         theme-color colore la barre du haut du téléphone. L'appli étant
+         toujours en mode sombre, une seule couleur suffit : la même que
+         le fond de la page, pour que tout se fonde ensemble. -->
+    <link rel="manifest" href="manifest.webmanifest" />
+    <meta name="theme-color" content="#12161a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="icon" href="icones/icone-192.png" />
+    <link rel="apple-touch-icon" href="icones/icone-apple-180.png" />
+
+    <!-- Les feuilles de style, dans l'ordre :
+         d'abord les couleurs, ensuite la mise en page qui les utilise. -->
+    <link rel="stylesheet" href="css/1-couleurs.css" />
+    <link rel="stylesheet" href="css/2-mise-en-page.css" />
+  </head>
+
+  <body>
+    <!-- ================= LE TITRE ================= -->
+    <header>
+      <h1>Geometry <span>Mania</span></h1>
+      <p class="sous-titre">
+        Clique sur la carte pour dérouler le raisonnement, étape par étape.
+      </p>
+    </header>
+
+    <!-- ================= LES RÉGLAGES =================
+         Chaque bouton porte un attribut data-mode ou data-niveau.
+         Le JavaScript lit cet attribut pour savoir quoi faire.
+         aria-pressed="true" indique le bouton actuellement choisi.
+
+         Les exercices sont rangés en deux familles : ceux qui parlent
+         de la FIGURE (la reconnaître, la décrire) et ceux qui
+         CALCULENT une mesure. -->
+    <div class="reglages">
+      <div class="groupe" role="group" aria-label="Exercices sur les figures">
+        <span class="etiquette">Figures</span>
+        <button type="button" data-mode="vocabulaire" aria-pressed="false">
+          Vocabulaire
+        </button>
+        <button type="button" data-mode="droites" aria-pressed="false">
+          Droites
+        </button>
+        <button type="button" data-mode="cercle" aria-pressed="false">
+          Cercle
+        </button>
+        <button type="button" data-mode="angles" aria-pressed="false">
+          Angles
+        </button>
+        <button type="button" data-mode="triangles" aria-pressed="false">
+          Triangles
+        </button>
+        <button type="button" data-mode="quadrilateres" aria-pressed="false">
+          Quadrilatères
+        </button>
+        <button type="button" data-mode="symetrie" aria-pressed="false">
+          Symétrie
+        </button>
+        <button type="button" data-mode="solides" aria-pressed="false">
+          Solides
+        </button>
+      </div>
+
+      <div class="groupe" role="group" aria-label="Exercices de mesure">
+        <span class="etiquette">Mesures</span>
+        <button type="button" data-mode="perimetre" aria-pressed="false">
+          Périmètre
+        </button>
+        <button type="button" data-mode="aire" aria-pressed="false">
+          Aire
+        </button>
+        <button type="button" data-mode="conversions" aria-pressed="false">
+          Conversions
+        </button>
+      </div>
+
+      <div class="groupe" role="group" aria-label="Tous les exercices">
+        <button type="button" data-mode="melange" aria-pressed="true">
+          Mélange
+        </button>
+      </div>
+
+      <div class="groupe" role="group" aria-label="Niveau de difficulté">
+        <span class="etiquette">Niveau</span>
+        <button type="button" data-niveau="facile" aria-pressed="true">
+          Facile
+        </button>
+        <button type="button" data-niveau="moyen" aria-pressed="false">
+          Moyen
+        </button>
+        <button type="button" data-niveau="costaud" aria-pressed="false">
+          Costaud
+        </button>
+      </div>
+
+      <button type="button" id="nouvelle" class="principal">
+        Nouvelle figure
+      </button>
+
+      <!-- Ce bouton est caché ("hidden") au départ. Il n'apparaît que si
+           le téléphone propose vraiment d'installer l'appli : c'est le
+           fichier js/7-installation.js qui le fait apparaître. -->
+      <button type="button" id="installer" class="installer" hidden>
+        ⬇ Installer l'appli
+      </button>
+    </div>
+
+    <!-- ================= LA GRANDE CARTE =================
+         C'est le gros div que l'on clique.
+         Les "id" servent au JavaScript à retrouver chaque zone.
+         tabindex="0" permet de l'atteindre au clavier avec Tab.
+         aria-live="polite" fait lire les changements par un lecteur d'écran. -->
+    <div
+      class="scene"
+      id="scene"
+      role="button"
+      tabindex="0"
+      aria-live="polite"
+      aria-label="Carte de géométrie : cliquer pour afficher l'étape suivante"
+    >
+      <!-- LA FIGURE. C'est le dessin de géométrie, en SVG. Il est
+           entièrement fabriqué par le JavaScript, et il change à chaque
+           étape : c'est tout l'intérêt de l'application. -->
+      <div class="figure" id="figure" hidden></div>
+
+      <!-- La formule (quand il y en a une) et la phrase d'explication.
+           Ces deux zones sont remplies par le JavaScript. -->
+      <div class="expr" id="expr"></div>
+      <p class="note" id="note"></p>
+
+      <!-- Le bas de la carte : progression, compteur, petit indice. -->
+      <div class="pied">
+        <span class="points" id="points" aria-hidden="true"></span>
+        <span id="compteur">Étape 1</span>
+        <span class="indice" id="indice">Clique ici ▸</span>
+      </div>
+    </div>
+
+    <!-- ================= LE RETOUR EN ARRIÈRE =================
+         Deux boutons pour rattraper une tape malheureuse, au doigt :
+           - revenir d'une étape dans le raisonnement en cours
+           - revenir carrément à la figure précédente
+         Ils sont EN DEHORS de la carte : les cliquer ne fait donc pas
+         avancer le raisonnement. Le JavaScript les grise (attribut
+         disabled) quand il n'y a plus rien derrière. -->
+    <div class="navigation" role="group" aria-label="Revenir en arrière">
+      <button type="button" id="figure-precedente">
+        <span aria-hidden="true">◂◂</span> Figure précédente
+      </button>
+      <button type="button" id="etape-precedente">
+        <span aria-hidden="true">◂</span> Étape précédente
+      </button>
+    </div>
+
+    <!-- ================= L'AIDE =================
+         La première phrase parle du clavier : elle ne sert à rien sur un
+         téléphone, le CSS la cache donc sur les petits écrans tactiles. -->
+    <p class="aide aide-clavier">
+      Raccourcis : <kbd>Espace</kbd> ou <kbd>Entrée</kbd> = étape suivante ·
+      <kbd>←</kbd> = étape précédente · <kbd>N</kbd> = nouvelle figure.
+    </p>
+    <p class="aide">
+      Sur la figure, l'élément dont on parle est
+      <span class="hl">orange et plus épais</span> : il reste repérable même
+      sans distinguer les couleurs. Les traits en pointillés sont des traits
+      d'aide, qui n'existent pas vraiment dans la figure.
+    </p>
+
+    <!-- ================= LES SCRIPTS =================
+         L'ORDRE EST IMPORTANT : chaque fichier utilise les précédents.
+           1. les outils (hasard, nombres, points)
+           2. la façon d'écrire une formule
+           3. la boîte à outils du dessinateur (le SVG)
+           4. les exercices sur les figures
+           5. les exercices de mesure, et la liste des exercices
+           6. le chef d'orchestre, qui lance tout
+           7. l'installation sur le téléphone (bonus)
+         Ils sont tout en bas pour que la page existe déjà quand ils
+         se mettent en route. -->
+    <script src="js/1-outils.js"></script>
+    <script src="js/2-affichage.js"></script>
+    <script src="js/3-figures.js"></script>
+    <script src="js/4-exercices-figures.js"></script>
+    <script src="js/5-exercices-mesures.js"></script>
+    <script src="js/6-application.js"></script>
+    <script src="js/7-installation.js"></script>
+  </body>
+</html>
